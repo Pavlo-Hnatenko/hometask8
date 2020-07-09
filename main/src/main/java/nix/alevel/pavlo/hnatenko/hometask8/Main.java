@@ -9,12 +9,15 @@ import java.util.stream.Collectors;
 
 public class Main {
     private static final Logger logger = Logger.getLogger(Main.class);
-    static int[] ints = new int[10000];
+    static int[] ints = new int[1000];
+    static Set<SortInterface> sorts = new HashSet<>();
+    static Map<String, Long> sortRating = new HashMap<>();
     static long beforeSort;
+    static long collectionsSortTime = getAverageCollectionsSortNanoTime();
+
 
     public static void main(String[] args) {
 
-        Set<SortInterface> sorts = new HashSet<>();
         sorts.add(new BubbleSort());
         sorts.add(new InsertionSort());
         sorts.add(new MergeSort());
@@ -23,11 +26,12 @@ public class Main {
         sorts.add(new ShellSort());
         sorts.add(new ShuttleSort());
 
-        for (SortInterface sort : sorts){
-            getSortNanoTimeLog(sort);
-            getCollectionsSortNanoTimeLog();
+        logger.info("Collections sort average sort time at 100 iteration: " + collectionsSortTime + "\n");
+        for (SortInterface sort : sorts) {
             compareWithCollectionsSort(sort);
         }
+
+        getSortRatingLog();
 
     }
 
@@ -43,22 +47,30 @@ public class Main {
         return System.nanoTime() - beforeSort;
     }
 
-    static void setBeforeSort(){
+    static void setBeforeSort() {
         beforeSort = System.nanoTime();
     }
 
-    static void getSortNanoTimeLog(SortInterface implementor){
-        logger.info(implementor.getSortName() + ": " + getSortNanoTime(implementor));
-    }
-
-    static long getSortNanoTime(SortInterface implementor){
+    static long getSortNanoTime(SortInterface implementor) {
         fullFillArray(ints);
         setBeforeSort();
         implementor.sort(ints);
         return getNanoTime();
     }
 
-    static long getCollectionsSortNanoTime(){
+    static long getAverageSortNanoTime(SortInterface implementor) {
+        int i = 0;
+        long averageTime = 0;
+        while (i < 100) {
+            averageTime += getSortNanoTime(implementor);
+            i++;
+        }
+        averageTime /= i;
+
+        return averageTime;
+    }
+
+    static long getCollectionsSortNanoTime() {
         fullFillArray(ints);
         List<Integer> list = Arrays.stream(ints).boxed().collect(Collectors.toList());
         setBeforeSort();
@@ -66,28 +78,57 @@ public class Main {
         return getNanoTime();
     }
 
-    static void getCollectionsSortNanoTimeLog(){
-        logger.info("Collections sort: " + getCollectionsSortNanoTime());
+    static long getAverageCollectionsSortNanoTime() {
+        int i = 0;
+        long averageTime = 0;
+        while (i < 100) {
+            averageTime += getCollectionsSortNanoTime();
+            i++;
+        }
+        averageTime /= i;
+
+        return averageTime;
     }
 
-    static void compareWithCollectionsSort(SortInterface implementor){
-        long ourSortTime = getSortNanoTime(implementor);
-        long collectionsSortTime = getCollectionsSortNanoTime();
+    static void compareWithCollectionsSort(SortInterface implementor) {
+        long ourSortTime = getAverageSortNanoTime(implementor);
+        logger.info(implementor.getSortName() + " average sort time at 100 iteration: " + ourSortTime);
 
-        if (ourSortTime > collectionsSortTime){
-            double quotient  = (double) ourSortTime / collectionsSortTime;
+        if (ourSortTime > collectionsSortTime) {
+            double quotient = (double) ourSortTime / collectionsSortTime;
             String formattedDouble = new DecimalFormat("#0.00").format(Math.abs(quotient));
-            logger.info("Our sort " + implementor.getSortName() + " is slower than Collections sort in " + formattedDouble  + " times.");
-        } else if (ourSortTime < collectionsSortTime){
-            double quotient  = (double) collectionsSortTime / ourSortTime;
+            logger.info("Our sort " + implementor.getSortName() + " is slower than Collections sort in " + formattedDouble + " times. \n");
+        } else if (ourSortTime < collectionsSortTime) {
+            double quotient = (double) collectionsSortTime / ourSortTime;
             String formattedDouble = new DecimalFormat("#0.00").format(Math.abs(quotient));
-            logger.info("Our sort " + implementor.getSortName() + " is faster than Collections sort in " + formattedDouble + " times.");
+            logger.info("Our sort " + implementor.getSortName() + " is faster than Collections sort in " + formattedDouble + " times. \n");
         } else {
-            logger.info("Our sort " + implementor.getSortName() + " and Collections sort is equals! Incredible!");
+            logger.info("Our sort " + implementor.getSortName() + " and Collections sort is equals! Incredible! \n");
         }
 
-
+        getSortRatingEntry(implementor, ourSortTime);
     }
 
+    static void getSortRatingEntry(SortInterface implementor, long sortTime) {
+        sortRating.put(implementor.getSortName(), sortTime);
+    }
+
+    static void getSortRatingLog() {
+        List<Map.Entry<String, Long>> list = new ArrayList<>(sortRating.entrySet());
+        list.sort(Map.Entry.comparingByValue());
+
+        Map<String, Long> result = new LinkedHashMap<>();
+        for (Map.Entry<String, Long> entry : list) {
+            result.put(entry.getKey(), entry.getValue());
+        }
+
+        int i = 1;
+        logger.info("Our sort top is following: \n");
+        for (Map.Entry<String, Long> entry : result.entrySet()) {
+            logger.info(i + ". " + entry.getKey() + ": " + entry.getValue());
+            i++;
+        }
+
+    }
 
 }
