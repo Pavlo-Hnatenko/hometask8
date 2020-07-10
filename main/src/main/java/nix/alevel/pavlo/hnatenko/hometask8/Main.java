@@ -15,7 +15,6 @@ public class Main {
     static long beforeSort;
     static long collectionsSortTime = getAverageCollectionsSortNanoTime();
 
-
     public static void main(String[] args) {
 
         sorts.add(new BubbleSort());
@@ -33,61 +32,6 @@ public class Main {
 
         getSortRatingLog();
 
-    }
-
-    static void fullFillArray(int[] array) {
-        int index;
-        for (int i = 0; i < array.length; i++) {
-            index = (int) Math.floor(Math.random() * 1000000);
-            array[i] = index;
-        }
-    }
-
-    static long getNanoTime() {
-        return System.nanoTime() - beforeSort;
-    }
-
-    static void setBeforeSort() {
-        beforeSort = System.nanoTime();
-    }
-
-    static long getSortNanoTime(SortInterface implementor) {
-        fullFillArray(ints);
-        setBeforeSort();
-        implementor.sort(ints);
-        return getNanoTime();
-    }
-
-    static long getAverageSortNanoTime(SortInterface implementor) {
-        int i = 0;
-        long averageTime = 0;
-        while (i < 100) {
-            averageTime += getSortNanoTime(implementor);
-            i++;
-        }
-        averageTime /= i;
-
-        return averageTime;
-    }
-
-    static long getCollectionsSortNanoTime() {
-        fullFillArray(ints);
-        List<Integer> list = Arrays.stream(ints).boxed().collect(Collectors.toList());
-        setBeforeSort();
-        Collections.sort(list);
-        return getNanoTime();
-    }
-
-    static long getAverageCollectionsSortNanoTime() {
-        int i = 0;
-        long averageTime = 0;
-        while (i < 100) {
-            averageTime += getCollectionsSortNanoTime();
-            i++;
-        }
-        averageTime /= i;
-
-        return averageTime;
     }
 
     static void compareWithCollectionsSort(SortInterface implementor) {
@@ -109,10 +53,6 @@ public class Main {
         getSortRatingEntry(implementor, ourSortTime);
     }
 
-    static void getSortRatingEntry(SortInterface implementor, long sortTime) {
-        sortRating.put(implementor.getSortName(), sortTime);
-    }
-
     static void getSortRatingLog() {
         List<Map.Entry<String, Long>> list = new ArrayList<>(sortRating.entrySet());
         list.sort(Map.Entry.comparingByValue());
@@ -129,6 +69,65 @@ public class Main {
             i++;
         }
 
+    }
+
+    private static void fullFillArray(int[] array) {
+        int index;
+        for (int i = 0; i < array.length; i++) {
+            index = (int) Math.floor(Math.random() * 1000000);
+            array[i] = index;
+        }
+    }
+
+    private static long getNanoTime() {
+        return System.nanoTime() - beforeSort;
+    }
+
+    private static void setBeforeSort() {
+        beforeSort = System.nanoTime();
+    }
+
+    private static long getSortNanoTime(SortInterface implementor) {
+        fullFillArray(ints);
+        setBeforeSort();
+        implementor.sort(ints);
+        return getNanoTime();
+    }
+
+    private static long getAverageSortNanoTime(SortInterface implementor) {
+        int i = 0;
+        long averageTime = 0;
+        while (i < 100) {
+            averageTime += getSortNanoTime(implementor);
+            i++;
+        }
+        averageTime /= i;
+
+        return averageTime;
+    }
+
+    private static long getCollectionsSortNanoTime() {
+        fullFillArray(ints);
+        List<Integer> list = Arrays.stream(ints).boxed().collect(Collectors.toList());
+        setBeforeSort();
+        Collections.sort(list);
+        return getNanoTime();
+    }
+
+    private static long getAverageCollectionsSortNanoTime() {
+        int i = 0;
+        long averageTime = 0;
+        while (i < 100) {
+            averageTime += getCollectionsSortNanoTime();
+            i++;
+        }
+        averageTime /= i;
+
+        return averageTime;
+    }
+
+    private static void getSortRatingEntry(SortInterface implementor, long sortTime) {
+        sortRating.put(implementor.getSortName(), sortTime);
     }
 
 }
